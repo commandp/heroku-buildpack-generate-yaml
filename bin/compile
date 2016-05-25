@@ -3,6 +3,8 @@
 require 'fileutils'
 require 'pathname'
 require 'tmpdir'
+require 'yaml'
+require 'json'
 
 BUILD_DIR    = ARGV[0]
 CACHE_DIR    = ARGV[1]
@@ -28,4 +30,14 @@ end
 arrow "############################################"
 arrow "         GENERATE YAML BUILDPA CK           "
 arrow "############################################"
-arrow read_env('application')
+
+FileUtils::mkdir_p "#{BUILD_DIR}/config"
+
+%w(application paypal skylight database).each do |y|
+  env_name = "ENV_#{y}"
+  if env = read_env(env_name)
+    application_env = JSON.parse(env)
+    File.open("#{BUILD_DIR}/config/#{y}.yml", 'w') {|f| f.write JSON.parse(env).to_yaml }
+    arrow "GENERATE #{y}.yml "
+  end
+end
